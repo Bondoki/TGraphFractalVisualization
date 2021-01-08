@@ -32,19 +32,15 @@ public:
 		// Called once at the start, so create things here
           
                 // Initialise offset so 0,0 in world space is middle of the screen
-		//fOffsetX = 0;//-(ScreenWidth()-256) / 2;
-		//fOffsetY = 0;//-10 ;
+		
                 
                 ScreenOffSetX = (ScreenWidth()-256) / 2;
                 ScreenOffSetY = 10;
           
                 fOffsetX = -256 / 2;
 		fOffsetY = -256 / 2;
-                
-                
+                                
                 offsetAngle = 0;
-
-                bDrawIdx = false;
                 
                 order=1;
                 
@@ -84,26 +80,6 @@ public:
                 TGraph.clear();
                 calculateTGraphDrawing(1);
                 
-                
-                //TGraph.push_back({ {-100.0f, 0.0f}, {0.0f, 0.0f} });
-                //TGraph.push_back({ { 50.0f, -86.60254037f},{0.0f, 0.0f} });
-                //TGraph.push_back({ { 50.0f, 86.60254037f},{0.0f, 0.0f} });
-                
-//                  TGraph.push_back({ {0.0f, 0.0f}, {-100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {0.0f, -100.0f} });
-                //TGraph.push_back({ {0.0f, 0.0f}, {100.0f, 0.0f} });
-                //calculateTGraph(1);
-                
-                calculatePath();
-                
-                
-                counter = 0;
-                counterInc = 1;
-                drawAll = false;
-                
-                pointOnCurveIdx=1./(totNumPoints-1); //0.5 length
-                
 		return true;
 	}
 	
@@ -127,29 +103,7 @@ public:
           newVec.y = oldVec.x*std::sin(angle*3.14159265f/180.0f)+oldVec.y*std::cos(angle*3.14159265f/180.0f);
         }
 	
-	void calculatePath()
-        {
-                //order=7;
-                N = int(std::pow(2,order));
-                
-                totNumPoints = N*N;
-                
-                path.clear();
-                path.resize(totNumPoints);
-                
-                for(int i = 0; i < totNumPoints; i++)
-                {
-                  path[i]=hilbert(i);
-                  float len = int(std::pow(2,orderMAX)/N);//ScreenWidth()/N;
-                  path[i] *= len;
-                  path[i] += olc::vf2d(int(len/2),int(len/2));
-                }
-                
-                counter = 0;
-		return;
-        }
-        
-        
+	
         void calculateTGraphDrawing(int o)
         {
           NodeIdx centerNode = simpleTreeGraph.centerGraph.at(0);
@@ -171,8 +125,6 @@ public:
             }
           }
           
-          
-          counter = 0;
           return;
         }
           
@@ -302,8 +254,8 @@ public:
             // std::cout << std::endl;
           }
           
-          std::cout << "Size Old Pos Graph =  " << positionNode.size() << std::endl;
-          std::cout << "Size New Pos Graph =  " << positionNewNode.size() << std::endl;
+          //std::cout << "Size Old Pos Graph =  " << positionNode.size() << std::endl;
+          //std::cout << "Size New Pos Graph =  " << positionNewNode.size() << std::endl;
           positionNode = positionNewNode;
           
           //translate everything to the center of the new structure
@@ -385,59 +337,12 @@ public:
                   nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
                     std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
                     simpleTreeGraph.calculateEccentricity();
-                    simpleTreeGraph.printTreeGraph();
-                    /*
-                  
-                  simpleTreeGraph.clear();
-                  positionNode.clear();
-                  
-                  simpleTreeGraph.addEdge(0,1,1);
-                  simpleTreeGraph.addEdge(1,2,1);
-                  simpleTreeGraph.addEdge(1,3,1);
-                  
-                  positionNode[0]={-10.0f, 0.0f};
-                  positionNode[1]={0.0f,0.0f};
-                  positionNode[2]={5.0f, -8.660254037f};
-                  positionNode[3]={5.0f, 8.660254037f};
-                  
-                  simpleTreeGraph.printTreeGraph();
-                  simpleTreeGraph.calculateEccentricity();
-                  
-                  std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
-                  
-                  
-                  
-                  for(int i = 2; i <= order; i++)
-                  {
-                    std::cout << "generation: " << i << std::endl;
-                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
-                    std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
-                    simpleTreeGraph.calculateEccentricity();
-                    simpleTreeGraph.printTreeGraph();
-                  }
-                  */
+                  //  simpleTreeGraph.printTreeGraph();
+                   
                   
                   TGraph.clear();
                   calculateTGraphDrawing(order);
-                  
-                  //TGraph.clear();
-                  //TGraph.push_back({ {-100.0f, 0.0f}, {0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, -86.60254037f},{0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, 86.60254037f},{0.0f, 0.0f} });
-                  
-//                   TGraph.push_back({ {0.0f, 0.0f}, {-100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {0.0f, -100.0f} });
-//                   
-                  //for(int i = 1; i <= order; i++)
-                  //  calculateTGraph(i);
-                  
-                  
-                  float oldpointOnCurveIdx = pointOnCurveIdx;
-                  calculatePath();
-                  pointOnCurveIdx = int(oldpointOnCurveIdx*(totNumPoints-1))/float(totNumPoints-1);
-                  counterInc = 1;
-                  
+                                                      
                 }
                 
                 if (GetKey(olc::Key::DOWN).bPressed)
@@ -474,7 +379,7 @@ public:
                    positionNode[3]={5.0f, 8.660254037f};
                    */
                   
-                  simpleTreeGraph.printTreeGraph();
+                  //simpleTreeGraph.printTreeGraph();
                   simpleTreeGraph.calculateEccentricity();
                   
                   std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
@@ -487,28 +392,13 @@ public:
                     nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
                     std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
                     simpleTreeGraph.calculateEccentricity();
-                    simpleTreeGraph.printTreeGraph();
+                    //simpleTreeGraph.printTreeGraph();
                   }
                   
                   TGraph.clear();
                   calculateTGraphDrawing(order);
                   
-                  //TGraph.clear();
-                  //TGraph.push_back({ {-100.0f, 0.0f}, {0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, -86.60254037f},{0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, 86.60254037f},{0.0f, 0.0f} });
-//                    TGraph.push_back({ {0.0f, 0.0f}, {-100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {0.0f, -100.0f} });
                   
-                  //for(int i = 1; i <= order; i++)
-                  //  calculateTGraph(i);
-                  
-                  
-                  float oldpointOnCurveIdx = pointOnCurveIdx;
-                  calculatePath();
-                  pointOnCurveIdx = int(oldpointOnCurveIdx*(totNumPoints-1))/float(totNumPoints-1);
-                  counterInc = 1;
                 }
                 
                 if (GetKey(olc::Key::RIGHT).bPressed)
@@ -544,7 +434,7 @@ public:
                    positionNode[3]={5.0f, 8.660254037f};
                    */
                   
-                  simpleTreeGraph.printTreeGraph();
+                  //simpleTreeGraph.printTreeGraph();
                   simpleTreeGraph.calculateEccentricity();
                   
                   std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
@@ -557,27 +447,13 @@ public:
                     nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
                     std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
                     simpleTreeGraph.calculateEccentricity();
-                    simpleTreeGraph.printTreeGraph();
+                    //simpleTreeGraph.printTreeGraph();
                   }
                   
                   TGraph.clear();
                   calculateTGraphDrawing(order);
                   
-                  //
-                  //TGraph.clear();
-                  //TGraph.push_back({ {-100.0f, 0.0f}, {0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, -86.60254037f},{0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, 86.60254037f},{0.0f, 0.0f} });
                   
-//                   TGraph.push_back({ {0.0f, 0.0f}, {-100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {0.0f, -100.0f} });
-//                   
-                 // for(int i = 1; i <= order; i++)
-                  //  calculateTGraph(i);
-                  
-                  counterInc++;
-                  counterInc = counterInc > N ? N : counterInc;
                 }
                 
                 if (GetKey(olc::Key::LEFT).bPressed)
@@ -608,13 +484,13 @@ public:
                   VectorRotationByAngle(angleTwo, oldNode1, newNode1);
                   positionNode[3]=newNode1;
                   /*
-                   p o*sitionNode[0]={-10.0f, 0.0f};
+                   positionNode[0]={-10.0f, 0.0f};
                    positionNode[1]={0.0f,0.0f};
                    positionNode[2]={5.0f, -8.660254037f};
                    positionNode[3]={5.0f, 8.660254037f};
                    */
                   
-                  simpleTreeGraph.printTreeGraph();
+                  //simpleTreeGraph.printTreeGraph();
                   simpleTreeGraph.calculateEccentricity();
                   
                   std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
@@ -627,36 +503,23 @@ public:
                     nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
                     std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
                     simpleTreeGraph.calculateEccentricity();
-                    simpleTreeGraph.printTreeGraph();
+                    //simpleTreeGraph.printTreeGraph();
                   }
                   
                   TGraph.clear();
                   calculateTGraphDrawing(order);
                   
-                  //TGraph.push_back({ {-100.0f, 0.0f}, {0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, -86.60254037f},{0.0f, 0.0f} });
-                  //TGraph.push_back({ { 50.0f, 86.60254037f},{0.0f, 0.0f} });
                   
-//                   TGraph.push_back({ {0.0f, 0.0f}, {-100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {100.0f, 0.0f} });
-//                 TGraph.push_back({ {0.0f, 0.0f}, {0.0f, -100.0f} });
-//                   
-                 // for(int i = 1; i <= order; i++)
-                  //  calculateTGraph(i);
-                  
-                  counterInc--;
-                  counterInc = counterInc < 0 ? 0 : counterInc;
                 }
                 
                 if (GetKey(olc::Key::ENTER).bPressed)
                 {
-                  drawAll = !drawAll;
+                  
                 }
                 
                 if (GetKey(olc::Key::W).bPressed)
                 {
-                  pointOnCurveIdx += 1.0/(totNumPoints-1);
-                  pointOnCurveIdx = pointOnCurveIdx >= 1.0 ? 1.0 : pointOnCurveIdx;
+                  
                 }
                 
                 if (GetKey(olc::Key::E).bPressed)
@@ -685,10 +548,6 @@ public:
                 
                 
 		// called once per frame
-                counter += counterInc;
-		// for (int x = 0; x < ScreenWidth(); x++)
-		//	for (int y = 0; y < ScreenHeight(); y++)
-		//		Draw(x, y, olc::Pixel(rand() % 255, rand() % 255, rand()% 255));	
                 
                 // Clip
 		float fWorldLeft, fWorldTop, fWorldRight, fWorldBottom;
@@ -727,137 +586,21 @@ public:
 
 		WorldToScreen(w_sx, w_sy, pixel_sx, pixel_sy);
                 WorldToScreen(w_ex, w_ey, pixel_ex, pixel_ey);
-                
-                
-                
-                //DrawRect(pixel_sx, pixel_sy, pixel_ex-pixel_sx, pixel_ey-pixel_sy, olc::GREEN);
-                //if(!drawAll && (i < counter) )
-                //DrawLine(pixel_sx, pixel_sy, pixel_ex, pixel_ey, hsvColor);
-                
+                 
                 //if(drawAll )
                 DrawLine(pixel_sx, pixel_sy, pixel_ex, pixel_ey, hsvColor);
-                
-                
+                                
                 }
-                
-                /*
-                //if(!drawAll)
-                {
-                
-                
-                // Draw Boundary
-                //DrawLine(10, 10, ScreenWidth() - 10, 10, olc::YELLOW);
-                //DrawLine(10, 10, 10, ScreenHeight() - 10, olc::YELLOW);
-                
-                for(int i = 1; (i < path.size()); i++)
-                {
-                  
-                  // Create a color using the hsv color space, this one makes a nice orange color
-                  float idxMap = (i < path.size()) ? i*360.0f/path.size() : 360.0f;
-                  auto hsvColor = olc::Colours::FromHsv(idxMap, 255, 255);
-                  
-                  int pixel_sx, pixel_sy, pixel_ex, pixel_ey;
-                
-                float w_sx = path[i-1].x;
-                float w_sy = path[i-1].y;
-                float w_ex = path[i].x;
-                float w_ey = path[i].y;
-                  
-                  //clip to region
-                w_sx = (w_sx < fWorldLeft) ? fWorldLeft : w_sx;
-                w_sx = (w_sx > fWorldRight) ? fWorldRight : w_sx;
-                w_sy = (w_sy < fWorldTop) ? fWorldTop : w_sy;
-                w_sy = (w_sy > fWorldBottom) ? fWorldBottom : w_sy;
-                w_ex = (w_ex > fWorldRight) ? fWorldRight : w_ex;
-                w_ex = (w_ex < fWorldLeft) ? fWorldLeft : w_ex;
-                w_ey = (w_ey > fWorldBottom) ? fWorldBottom : w_ey;
-                w_ey = (w_ey < fWorldTop) ? fWorldTop : w_ey;
-
-		WorldToScreen(w_sx, w_sy, pixel_sx, pixel_sy);
-                WorldToScreen(w_ex, w_ey, pixel_ex, pixel_ey);
-                
-                
-                
-                //DrawRect(pixel_sx, pixel_sy, pixel_ex-pixel_sx, pixel_ey-pixel_sy, olc::GREEN);
-                if(!drawAll && (i < counter) )
-                DrawLine(pixel_sx, pixel_sy, pixel_ex, pixel_ey, hsvColor);
-                
-                if(drawAll )
-                DrawLine(pixel_sx, pixel_sy, pixel_ex, pixel_ey, hsvColor);
-                
-                
-                }
-                }
-                
-                if(bDrawIdx)
-                for(int i = 0; i < path.size(); i++)
-                {
-                  int pixel_sx, pixel_sy, pixel_ex, pixel_ey;
-                  float w_sx = path[i].x;
-                  float w_sy = path[i].y;
-                  
-                  WorldToScreen(w_sx, w_sy, pixel_sx, pixel_sy);
-                  
-                  olc::vi2d sizeMsg = GetTextSize(std::to_string(i));
-                  
-                  if (w_sy >= fWorldTop && w_sy <= fWorldBottom && 
-                    
-                    w_sx >= fWorldLeft && w_sx <= fWorldRight
-                )
-                    if (pixel_sx+sizeMsg.x <= ScreenOffSetX+NMAX && pixel_sy+sizeMsg.y <= ScreenOffSetY+NMAX
-                )
-                    
-                    
-                    
-                DrawStringProp(pixel_sx, pixel_sy, std::to_string(i), olc::YELLOW);
-                  
-                }
-                
-                
-                if(counter >= path.size())
-                  counter = 0;
-                
                 
                 DrawString(10, ScreenHeight()-40, "Order: " + std::to_string(order), olc::YELLOW);
-                DrawString(100, ScreenHeight()-40, "Points: " + std::to_string(totNumPoints), olc::YELLOW);
-
+                DrawString(100, ScreenHeight()-40, "Points: " + std::to_string(positionNode.size()), olc::YELLOW);
                 
-                //for(int i = 0; i < totNumPoints; i++)
-                
-                  olc::vf2d pos=hilbert(pointOnCurveIdx*(totNumPoints-1));
-                  float len = int(std::pow(2,orderMAX)/N);//ScreenWidth()/N;
-                  pos *= len;
-                  pos += olc::vf2d(int(len/2),int(len/2));
-                  int pixel_sx, pixel_sy, pixel_ex, pixel_ey;
-                  
-                  float w_sx = pos.x;
-                  float w_sy = pos.y;
-                
-                    //clip to region
-                  w_sx = (w_sx < fWorldLeft) ? fWorldLeft : w_sx;
-                w_sx = (w_sx > fWorldRight) ? fWorldRight : w_sx;
-                w_sy = (w_sy < fWorldTop) ? fWorldTop : w_sy;
-                w_sy = (w_sy > fWorldBottom) ? fWorldBottom : w_sy;
-                
-                WorldToScreen(w_sx, w_sy, pixel_sx, pixel_sy);
-                  
-                  DrawCircle(pixel_sx, pixel_sy,2,olc::YELLOW);
+                DrawString(10, ScreenHeight()-10, "USAGE: R ARROWS ESC MOUSE", olc::YELLOW);
+                DrawString(10, ScreenHeight()-20, "scale: " + std::to_string(fScaleX), olc::YELLOW);
+                DrawString(10, ScreenHeight()-30, "OffSetAngle: " + std::to_string(offsetAngle) + " -> 0; " + std::to_string(int (240-2*offsetAngle)) + ";" + std::to_string(int(120-offsetAngle)), olc::YELLOW);
                 
                 
-                DrawString(10, ScreenHeight()-30, "length: " + std::to_string(pointOnCurveIdx), olc::YELLOW);
-                DrawString(10, ScreenHeight()-20, "pos: (" + std::to_string(pos.x) + "," + std::to_string(pos.y) + ")", olc::YELLOW);
-                DrawString(10, ScreenHeight()-10, "USAGE: WERT ARROWS ENTER ESC MOUSE", olc::YELLOW);
-                DrawString(10, ScreenHeight()-50, "scale: (" + std::to_string(fScaleX) + "," + std::to_string(fScaleY) + ")", olc::YELLOW);
-                */
-                
-                DrawString(10, ScreenHeight()-40, "Order: " + std::to_string(order), olc::YELLOW);
-                DrawString(100, ScreenHeight()-40, "Points: " + std::to_string(TGraph.size()), olc::YELLOW);
-                
-                DrawString(10, ScreenHeight()-10, "USAGE: WERT ARROWS ENTER ESC MOUSE", olc::YELLOW);
-                DrawString(10, ScreenHeight()-50, "scale: (" + std::to_string(fScaleX) + "," + std::to_string(fScaleY) + ")", olc::YELLOW);
-                
-                
-                DrawRect(ScreenOffSetX, ScreenOffSetY, NMAX, NMAX, olc::GREEN);
+                DrawRect(ScreenOffSetX, ScreenOffSetY, 256, 256, olc::GREEN);
                 
                 // Graceful exit if user is in full screen mode
 		return !GetKey(olc::Key::ESCAPE).bPressed;
@@ -866,82 +609,14 @@ public:
 
 	}
 	
-	olc::vf2d hilbert(int indexNumber)
-        {
-          olc::vf2d point;
-          
-          int index = indexNumber;
-          
-          switch (index&3)
-          {
-            case 0: point = olc::vf2d(0,0);
-                    break;
-                    
-            case 1: point = olc::vf2d(0,1);
-                    break;
-                    
-            case 2: point = olc::vf2d(1,1);
-                    break;
-                    
-            case 3: point = olc::vf2d(1,0);
-                    break;
-            
-            default: point = olc::vf2d(0,0);
-                     break;
-          }
-          
-          for(int j = 1; j < order; j++)
-          {
-          float tmp;
-          index = (index>>2);
-          
-          float length = std::pow(2,j);
-          switch (index&3)
-          {
-            case 0: point += olc::vf2d(0,0);
-                    std::swap(point.x, point.y);
-                    break;
-                    
-            case 1: point += olc::vf2d(0,length);
-                    break;
-                    
-            case 2: point += olc::vf2d(length,length);
-                    break;
-                    
-            case 3: tmp = length-1.0f-point.x;
-                    point.x= length-1.0f-point.y;
-                    point.y= tmp;
-                    
-                    point += olc::vf2d(length,0);
-                    break;
-            
-            default: point += olc::vf2d(0,0);
-                     break;
-          }
-          
-          }
-          
-          return point;
-          
-        }
 	
 public: int order;
-        int N;
-        int totNumPoints;
         
-        std::vector<olc::vf2d> path;
         
         std::vector<LineSegment> TGraph;
         
-        int counter;
-        int counterInc;
-        
-        const int orderMAX = 8;
-        const int NMAX = int(std::pow(2,orderMAX));
-        
-        bool drawAll;
-        
-        float pointOnCurveIdx;
+        const int orderMAX = 7;
+        //const int NMAX = int(std::pow(2,orderMAX));
         
         float fOffsetX = 0.0f;
 	float fOffsetY = 0.0f;
@@ -954,16 +629,11 @@ public: int order;
         int ScreenOffSetX;
         int ScreenOffSetY;
         
-        bool bDrawIdx;
-        
         float offsetAngle;
         
         TreeGraph simpleTreeGraph; 
         std::map<NodeIdx, olc::vf2d> positionNode;
         
-        
-        
-
 };
 
 

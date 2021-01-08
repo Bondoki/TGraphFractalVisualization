@@ -108,7 +108,7 @@ public:
           }
           
           eccentricity[startNode]=maxTopologicalDistance;
-          std::cout<< startNode << " -> eccentricity: " << eccentricity[startNode] <<std::endl;
+          //std::cout<< startNode << " -> eccentricity: " << eccentricity[startNode] <<std::endl;
         }
         
         // calculate the radius of the graph = min eccentricity
