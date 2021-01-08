@@ -21,7 +21,7 @@ class Example : public olc::PixelGameEngine
 public:
 	Example()
 	{
-		sAppName = "Hilbert Curve Demo";
+		sAppName = "T-Graph Fractal";
                 
                 
 	}
@@ -305,203 +305,16 @@ public:
           std::cout << "Size Old Pos Graph =  " << positionNode.size() << std::endl;
           std::cout << "Size New Pos Graph =  " << positionNewNode.size() << std::endl;
           positionNode = positionNewNode;
+          
+          //translate everything to the center of the new structure
+          olc::vf2d offsetpos = positionNode[peripheryNode];
+          for (auto& [nodeidx, posnode] : positionNode) {
+            
+            posnode -= offsetpos;
+          }
         }
         
-        void calculateTGraph(int o)
-        {
-                std::vector<LineSegment> tmpNextOrder;
-                
-                //LineSegment lineOffset = TGraph[TGraph.size()-1];
-                
-                LineSegment lineOffset = TGraph[int (2*o-2)];
-                
-//                 olc::vf2d startOld = lineOffset.endPos;
-//                 olc::vf2d startNew;
-//                 
-//                 
-//                 VectorRotationByAngle(60, startOld, startNew);
-//                 std::cout << startNew << std::endl;
-//                 
-                 for(int k = 0; k <3 ; k++)
-                for(int i = TGraph.size()-1; i >= 0; i--)
-                //  for(int i = 0; i < TGraph.size(); i++)
-                    
-                 
-                {
-                  LineSegment line = TGraph[i];
-                  
-                  olc::vf2d startOld = line.startPos;//{0.0f,0.0f};//line.startPos;//-lineOffset.startPos;
-                  olc::vf2d endOld = line.endPos;//-lineOffset.startPos;
-                
-                  olc::vf2d startNew;
-                  olc::vf2d endNew;
-                  
-                  float angle = 0;
-                  
-                  if(k==0)
-                    angle = 0.0f;//o%2 == 0 ? 120.0f : -120.0f;
-                  else if(k==1)
-                    angle = 120.0f-offsetAngle;//sign*120+da;
-                  else if(k==2)
-                    angle = 240.0f-2*offsetAngle;//sign*240+da;//o%2 == 0 ? -120.0f : 120.0f;
-                  //angle = -120; angle <= 120; angle += 120
-                  
-                  
-                  VectorRotationByAngle(angle, startOld, startNew);
-                  VectorRotationByAngle(angle, endOld, endNew);
-                  
-                  olc::vf2d lineOffsetEndNewRot;
-                  VectorRotationByAngle(angle, lineOffset.endPos, lineOffsetEndNewRot);
-                  
-                  //if(o%2 == 0)
-                  if(o > 1)
-                  {
-                    LineSegment tmpline1({ {startNew+(lineOffset.endPos-lineOffsetEndNewRot)}, {endNew+(lineOffset.endPos-lineOffsetEndNewRot)}});
-                    tmpNextOrder.push_back(tmpline1);
-                  }
-                  else
-                  {
-                    LineSegment tmpline1({ {endNew+(lineOffset.endPos-lineOffsetEndNewRot)}, {startNew+(lineOffset.endPos-lineOffsetEndNewRot)}});
-                    tmpNextOrder.push_back(tmpline1);
-                  } 
-                  
-                /*for(int k = 0; k <3 ; k++)
-                for(int i = TGraph.size()-1; i >= 0; i--)
-                {
-                  LineSegment line = TGraph[i];
-                  
-                  olc::vf2d startOld = line.startPos-lineOffset.startPos;
-                  olc::vf2d endOld = line.endPos-lineOffset.startPos;
-                  
-                 
-                  
-                  olc::vf2d startNew;
-                  olc::vf2d endNew;
-                  
-                  float angle = 0;
-                  
-                  olc::vf2d eApara = (lineOffset.endPos-lineOffset.startPos).norm();
-                  float da = -std::acos(eApara.x)*180.f/3.14159265f;
-                   std::cout << da << std::endl;
-                  
-                  float sign=1.0; 
-//                   if(o%2==0)
-//                     sign=-1.0;
-//                   
-                  da = 0.0f;
-                   
-                  if(k==0)
-                    angle = sign*0+da;//o%2 == 0 ? 120.0f : -120.0f;
-                  else if(k==1)
-                    angle = sign*120+da;
-                  else if(k==2)
-                    angle = sign*240+da;//o%2 == 0 ? -120.0f : 120.0f;
-                  //angle = -120; angle <= 120; angle += 120
-                  
-                  VectorRotationByAngle(angle, startOld, startNew);
-                  VectorRotationByAngle(angle, endOld, endNew);
-                  
-                  
-                  
-               if(o%2 == 1)
-                  {
-                    LineSegment tmpline1({{startNew+lineOffset.endPos}, {endNew+lineOffset.endPos}});
-                    tmpNextOrder.push_back(tmpline1);
-                  }
-                  else
-                  {
-                    LineSegment tmpline1({ {endNew+lineOffset.endPos}, {startNew+lineOffset.endPos}});
-                    tmpNextOrder.push_back(tmpline1);
-                  } 
-                  */
-                  /*
-                  float length = (line.endPos-line.startPos).mag();
-                  
-                  olc::vf2d eApara = (line.endPos-line.startPos).norm();
-                  
-                  //olc::vf2d eAperp = ((line.endPos-line.startPos).perp()).norm();
-                  //olc::vf2d eAperp = o%2 == 0 ?  ((line.startPos-line.endPos).perp()).norm() : ((line.endPos-line.startPos).perp()).norm();
-                  //olc::vf2d eAperp = ((line.startPos-line.endPos).perp()).norm();
-                  
-                  //olc::vf2d eAperp1 = o%2 == 0 ?  -((line.startPos-line.endPos).perp()).norm() : ((line.endPos-line.startPos).perp()).norm();
-                  //olc::vf2d eAperp2 = o%2 == 0 ?  -((line.startPos-line.endPos).perp()).norm() : ((line.endPos-line.startPos).perp()).norm();7
-                  
-                  olc::vf2d eAperp1 = o<1 ? -((line.startPos-line.endPos).perp()).norm() : ((line.endPos-line.startPos).perp()).norm();
-                  olc::vf2d eAperp2 = o<1 ? -((line.startPos-line.endPos).perp()).norm() : ((line.endPos-line.startPos).perp()).norm();
-                  
-                  float normLength = 1.0f/2.0f;///std::pow(2,o+1);
-                  
-                  if(o <= 1)
-                  {
-                  //LineSegment tmpline1({{line.startPos+eApara*length*normLength}, {line.startPos}});
-                  LineSegment tmpline1({{line.startPos}, {line.startPos+eApara*length*normLength}});
-                  tmpNextOrder.push_back(tmpline1);
-                  }
-                  else
-                  {
-                    LineSegment tmpline1({{line.startPos+eApara*length*normLength}, {line.startPos}});
-                    //LineSegment tmpline1({{line.startPos}, {line.startPos+eApara*length*normLength}});
-                  tmpNextOrder.push_back(tmpline1);
-                  }
-                    
-                  float angle =  120.0f;//0.0f;
-                  float COS = std::cos(angle*3.14159265f/180.0f);
-                  float SIN = std::sin(angle*3.14159265f/180.0f);
-                  
-                  if(o <= 1)
-                  {
-                  //LineSegment tmpline2({{line.startPos+eApara*length*normLength},{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp1*length*normLength*SIN}});
-                  LineSegment tmpline2({{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp1*length*normLength*SIN}, {line.startPos+eApara*length*normLength}});
-                  tmpNextOrder.push_back(tmpline2);
-                  }
-                  else
-                    {
-                  LineSegment tmpline2({{line.startPos+eApara*length*normLength},{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp1*length*normLength*SIN}});
-                  //LineSegment tmpline2({{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp1*length*normLength*SIN}, {line.startPos+eApara*length*normLength}});
-                  tmpNextOrder.push_back(tmpline2);
-                  }
-                  angle = 120.0f; //= o%2 == 0 ? 270.0f : 90.0f;
-                  COS = std::cos((360.f-angle)*3.14159265f/180.0f);
-                  SIN = std::sin((360.f-angle)*3.14159265f/180.0f);
-                  
-                  if(o <= 1)
-                  {
-                  //LineSegment tmpline3({{line.startPos+eApara*length*normLength},{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp2*length*normLength*SIN}});
-                  LineSegment tmpline3({{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp2*length*normLength*SIN},{line.startPos+eApara*length*normLength}});
-                  tmpNextOrder.push_back(tmpline3);
-                  }
-                  else
-                    {
-                  LineSegment tmpline3({{line.startPos+eApara*length*normLength},{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp2*length*normLength*SIN}});
-                  //LineSegment tmpline3({{line.startPos+eApara*length*normLength+eApara*length*normLength*COS+eAperp2*length*normLength*SIN},{line.startPos+eApara*length*normLength}});
-                  tmpNextOrder.push_back(tmpline3);
-                  }
-                  */
-                  
-                  /*float length = (line.endPos-line.startPos).mag();
-                  
-                  olc::vf2d v2 = (line.endPos-line.startPos).norm();
-                  
-                  //olc::vf2d v3 = ((line.endPos-line.startPos).perp()).norm();
-                  olc::vf2d v3 = ((line.startPos-line.endPos).perp()).norm();
-                  
-                  float normLength = 1.0f/2.0f;///std::pow(2,o+1);
-                  
-                  LineSegment tmpline1({{line.startPos+v2*length*normLength},{line.startPos}});
-                  LineSegment tmpline2({{line.startPos+v2*length*normLength},{line.endPos}});
-                  LineSegment tmpline3({{line.startPos+v2*length*normLength},{line.startPos+v2*length*normLength+v3*length*normLength}});
-                  
-                  tmpNextOrder.push_back(tmpline1);
-                  tmpNextOrder.push_back(tmpline2);
-                  tmpNextOrder.push_back(tmpline3);
-                  */
-                }
-                
-                TGraph = tmpNextOrder;
-                
-                counter = 0;
-		return;
-        }
+        
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
@@ -848,14 +661,16 @@ public:
                 
                 if (GetKey(olc::Key::E).bPressed)
                 {
-                  pointOnCurveIdx -= 1.0/(totNumPoints-1);
-                  pointOnCurveIdx = pointOnCurveIdx < 0.0 ? 0.0 : pointOnCurveIdx;
+                  
                 }
                 
                 if (GetKey(olc::Key::R).bPressed)
                 {
-                  fOffsetX = 0.0f;
-                  fOffsetY = 0.0f;
+                  fOffsetX = -256 / 2;
+                  fOffsetY = -256 / 2;
+                  
+                  offsetAngle = 0;
+                  
                   fScaleX = 1.0f;
                   fScaleY = 1.0f;
 
@@ -865,7 +680,7 @@ public:
                 
                 if (GetKey(olc::Key::T).bPressed)
                 {
-                  bDrawIdx = !bDrawIdx;
+                  
                 }
                 
                 
@@ -1037,6 +852,10 @@ public:
                 
                 DrawString(10, ScreenHeight()-40, "Order: " + std::to_string(order), olc::YELLOW);
                 DrawString(100, ScreenHeight()-40, "Points: " + std::to_string(TGraph.size()), olc::YELLOW);
+                
+                DrawString(10, ScreenHeight()-10, "USAGE: WERT ARROWS ENTER ESC MOUSE", olc::YELLOW);
+                DrawString(10, ScreenHeight()-50, "scale: (" + std::to_string(fScaleX) + "," + std::to_string(fScaleY) + ")", olc::YELLOW);
+                
                 
                 DrawRect(ScreenOffSetX, ScreenOffSetY, NMAX, NMAX, olc::GREEN);
                 
