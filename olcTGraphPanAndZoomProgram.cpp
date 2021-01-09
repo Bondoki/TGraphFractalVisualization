@@ -1,3 +1,35 @@
+/*
+ Created on 2021/01/06
+ Last modified on 2021/01/09
+ Author: bondoki
+ 
+ Purpose: Rendering of the T-Graph fractal aka Tree fractal aka T-fractal with functionality f=3,
+ for different generations G, see  S. Havlin and H. Weissman, "Mapping between hopping on hierarchical
+ structures and diffusion on a family of fractals", J. Phys. A: Math. Gen. (1986), 19, L1021-L1026.
+ This fractal has the fractal dimension of df=ln(f)/ln(2) -> df=1.5849625 with a total number of
+ nodes N=pow(f,G)+1.
+ The fractal construction obeys the rule to insert between every branch a new leave or
+ equivalently to copy and rotate the previous structure and attach it to any periphery node being the new center:
+ G0     G1     G2
+                 _|
+ ___ -> ___ -> ___|___
+         |      |   |
+ 
+ Inspired by the Pan&Zoom example of Javidx9 (https://youtu.be/ZQ8qtAizis4) gave the idea for this.
+ It's just for fun and educational purpose. Feel free to modify and use it :)
+ One note: according to the selected periphery node for the next generation the next fractal is still valid, but
+ the projection onto 2D gives a variety of appearance for higher generation but fails for the
+ unique right angle projection (offsetAngle=30). To check this look at lines 176-182. 
+ 
+ 
+ License: This piece of code is licensed to GNU GPLv3 according to
+ https://github.com/OneLoneCoder/videos/blob/master/LICENSE
+ also attributing Javidx9 for the unique and easy-to-use olc::PixelGameEngine and the underlying OLC-3 license see
+ https://github.com/OneLoneCoder/olcPixelGameEngine/wiki/Licencing
+ For more information about Javidx9 and OneLoneCoder please see https://github.com/OneLoneCoder
+*/ 
+
+
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_AdditionalColours.h"
@@ -22,8 +54,6 @@ public:
 	Example()
 	{
 		sAppName = "T-Graph Fractal";
-                
-                
 	}
 
 public:
@@ -31,9 +61,8 @@ public:
 	{
 		// Called once at the start, so create things here
           
-                // Initialise offset so 0,0 in world space is middle of the screen
+                // Initialise offset so world space is middle of the screen
 		
-                
                 ScreenOffSetX = (ScreenWidth()-256) / 2;
                 ScreenOffSetY = 10;
           
@@ -44,37 +73,10 @@ public:
                 
                 order=1;
                 
-                simpleTreeGraph.clear();
-                
-                simpleTreeGraph.addEdge(0,1,1);
-                simpleTreeGraph.addEdge(1,2,1);
-                simpleTreeGraph.addEdge(1,3,1);
-                
-                //float angleOne = 120-offsetAngle;
-                  //float angleTwo = 240-2*offsetAngle;
-                  float angleOne = 240-2*offsetAngle;
-                  float angleTwo = 120-offsetAngle;
-                
-                olc::vf2d oldNode1 = {-10.0f, 0.0f};
-                olc::vf2d newNode1;
-                VectorRotationByAngle(0, oldNode1, newNode1);
-                positionNode[0]=newNode1;
-                //VectorRotationByAngle(0, oldNode1, newNode1);
-                positionNode[1]={0.0f,0.0f};
-                VectorRotationByAngle(angleOne, oldNode1, newNode1);
-                positionNode[2]=newNode1;
-                VectorRotationByAngle(angleTwo, oldNode1, newNode1);
-                positionNode[3]=newNode1;
-                /*
-                positionNode[0]={-10.0f, 0.0f};
-                positionNode[1]={0.0f,0.0f};
-                positionNode[2]={5.0f, -8.660254037f};
-                positionNode[3]={5.0f, 8.660254037f};
-                */
-                  
+                createBasicTGraphUnit();
+                 
                 simpleTreeGraph.printTreeGraph();
-                simpleTreeGraph.calculateEccentricity();
-        
+                
                 std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
         
                 TGraph.clear();
@@ -101,6 +103,40 @@ public:
         {
           newVec.x = oldVec.x*std::cos(angle*3.14159265f/180.0f)-oldVec.y*std::sin(angle*3.14159265f/180.0f);
           newVec.y = oldVec.x*std::sin(angle*3.14159265f/180.0f)+oldVec.y*std::cos(angle*3.14159265f/180.0f);
+        }
+        
+        void createBasicTGraphUnit()
+        {
+          simpleTreeGraph.clear();
+          positionNode.clear();
+          
+          simpleTreeGraph.addEdge(0,1,1);
+          simpleTreeGraph.addEdge(1,2,1);
+          simpleTreeGraph.addEdge(1,3,1);
+          
+          //float angleOne = 120-offsetAngle;
+          //float angleTwo = 240-2*offsetAngle;
+          float angleOne = 240-2*offsetAngle;
+          float angleTwo = 120-offsetAngle;
+          
+          olc::vf2d oldNode1 = {-10.0f, 0.0f};
+          olc::vf2d newNode1;
+          VectorRotationByAngle(0, oldNode1, newNode1);
+          positionNode[0]=newNode1;
+          //VectorRotationByAngle(0, oldNode1, newNode1);
+          positionNode[1]={0.0f,0.0f};
+          VectorRotationByAngle(angleOne, oldNode1, newNode1);
+          positionNode[2]=newNode1;
+          VectorRotationByAngle(angleTwo, oldNode1, newNode1);
+          positionNode[3]=newNode1;
+          /*
+           *         positionNode[0]={-10.0f, 0.0f};
+           *         positionNode[1]={0.0f,0.0f};
+           *         positionNode[2]={5.0f, -8.660254037f};
+           *         positionNode[3]={5.0f, 8.660254037f};
+           */
+          simpleTreeGraph.calculateEccentricity();
+          
         }
 	
 	
@@ -129,17 +165,25 @@ public:
         }
           
         
-        void nextGenerationGraph(const TreeGraph oldGraph, TreeGraph& nextGraph)
+        void nextGenerationGraph(const TreeGraph oldGraph, TreeGraph& nextGraph, int o)
         {
           nextGraph.clear();
           
           NodeIdx centerNode = oldGraph.centerGraph.at(0);
           NodeIdx peripheryNode = oldGraph.peripheralGraph.at(0);
           
-          //float angleOne = 120-offsetAngle;
-          //float angleTwo = 240-2*offsetAngle;
-                  float angleOne = 240-2*offsetAngle;
-                  float angleTwo = 120-offsetAngle;
+          // Note: if you use an equivalent other periphery node you get an valid fractal
+          // but disordered for the right angle projection (offset 30)
+          // if(o == 4)
+          //  peripheryNode = 9;//8;//6;
+          
+          //if(o == 5) // if previous peripheryNode = oldGraph.peripheralGraph.at(0);
+          //  peripheryNode = 23;//17;//15;
+          
+          std::cout << "Selected Periphery Node =  " << peripheryNode << std::endl;
+          
+          float angleOne = 240-2*offsetAngle;
+          float angleTwo = 120-offsetAngle;
           
           std::map<NodeIdx, olc::vf2d> positionNewNode;
           
@@ -334,12 +378,14 @@ public:
                   order++;
                   order = order >= orderMAX ? orderMAX : order;
                   
-                  nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
-                    std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
-                    simpleTreeGraph.calculateEccentricity();
+                  //DrawStringDecal({30, 40}, "Calculating...", olc::YELLOW);
+                
+                  
+                  nextGenerationGraph(simpleTreeGraph, simpleTreeGraph, order);
+                  std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
+                  simpleTreeGraph.calculateEccentricity();
                   //  simpleTreeGraph.printTreeGraph();
                    
-                  
                   TGraph.clear();
                   calculateTGraphDrawing(order);
                                                       
@@ -350,46 +396,14 @@ public:
                   order--;
                   order = order < 1 ? 1 : order;
                   
-                  simpleTreeGraph.clear();
-                  positionNode.clear();
-                  
-                  simpleTreeGraph.addEdge(0,1,1);
-                  simpleTreeGraph.addEdge(1,2,1);
-                  simpleTreeGraph.addEdge(1,3,1);
-                  
-                  //float angleOne = 120-offsetAngle;
-                  //float angleTwo = 240-2*offsetAngle;
-                  float angleOne = 240-2*offsetAngle;
-                  float angleTwo = 120-offsetAngle;
-          
-                  olc::vf2d oldNode1 = {-10.0f, 0.0f};
-                  olc::vf2d newNode1;
-                  VectorRotationByAngle(0, oldNode1, newNode1);
-                  positionNode[0]=newNode1;
-                  //VectorRotationByAngle(0, oldNode1, newNode1);
-                  positionNode[1]={0.0f,0.0f};
-                  VectorRotationByAngle(angleOne, oldNode1, newNode1);
-                  positionNode[2]=newNode1;
-                  VectorRotationByAngle(angleTwo, oldNode1, newNode1);
-                  positionNode[3]=newNode1;
-                  /*
-                   p *ositionNode[0]={-10.0f, 0.0f};
-                   positionNode[1]={0.0f,0.0f};
-                   positionNode[2]={5.0f, -8.660254037f};
-                   positionNode[3]={5.0f, 8.660254037f};
-                   */
-                  
-                  //simpleTreeGraph.printTreeGraph();
-                  simpleTreeGraph.calculateEccentricity();
+                  createBasicTGraphUnit();
                   
                   std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
-                  
-                  
                   
                   for(int i = 2; i <= order; i++)
                   {
                     std::cout << "generation: " << i << std::endl;
-                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
+                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph, i);
                     std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
                     simpleTreeGraph.calculateEccentricity();
                     //simpleTreeGraph.printTreeGraph();
@@ -405,46 +419,14 @@ public:
                 {
                   offsetAngle -= 5;
                   
-                  simpleTreeGraph.clear();
-                  positionNode.clear();
-                  
-                  simpleTreeGraph.addEdge(0,1,1);
-                  simpleTreeGraph.addEdge(1,2,1);
-                  simpleTreeGraph.addEdge(1,3,1);
-                  
-                  //float angleOne = 120-offsetAngle;
-                  //float angleTwo = 240-2*offsetAngle;
-                  float angleOne = 240-2*offsetAngle;
-                  float angleTwo = 120-offsetAngle;
-                  
-                  olc::vf2d oldNode1 = {-10.0f, 0.0f};
-                  olc::vf2d newNode1;
-                  VectorRotationByAngle(0, oldNode1, newNode1);
-                  positionNode[0]=newNode1;
-                  //VectorRotationByAngle(0, oldNode1, newNode1);
-                  positionNode[1]={0.0f,0.0f};
-                  VectorRotationByAngle(angleOne, oldNode1, newNode1);
-                  positionNode[2]=newNode1;
-                  VectorRotationByAngle(angleTwo, oldNode1, newNode1);
-                  positionNode[3]=newNode1;
-                  /*
-                   p o*sitionNode[0]={-10.0f, 0.0f};
-                   positionNode[1]={0.0f,0.0f};
-                   positionNode[2]={5.0f, -8.660254037f};
-                   positionNode[3]={5.0f, 8.660254037f};
-                   */
-                  
-                  //simpleTreeGraph.printTreeGraph();
-                  simpleTreeGraph.calculateEccentricity();
+                  createBasicTGraphUnit();
                   
                   std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
-                  
-                  
                   
                   for(int i = 2; i <= order; i++)
                   {
                     std::cout << "generation: " << i << std::endl;
-                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
+                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph, i);
                     std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
                     simpleTreeGraph.calculateEccentricity();
                     //simpleTreeGraph.printTreeGraph();
@@ -460,47 +442,14 @@ public:
                 {
                   offsetAngle += 5;
                   
-                  simpleTreeGraph.clear();
-                  positionNode.clear();
-                  
-                  simpleTreeGraph.addEdge(0,1,1);
-                  simpleTreeGraph.addEdge(1,2,1);
-                  simpleTreeGraph.addEdge(1,3,1);
-                  
-                  
-                  //float angleOne = 120-offsetAngle;
-                  //float angleTwo = 240-2*offsetAngle;
-                  float angleOne = 240-2*offsetAngle;
-                  float angleTwo = 120-offsetAngle;
-                  
-                  olc::vf2d oldNode1 = {-10.0f, 0.0f};
-                  olc::vf2d newNode1;
-                  VectorRotationByAngle(0, oldNode1, newNode1);
-                  positionNode[0]=newNode1;
-                  //VectorRotationByAngle(0, oldNode1, newNode1);
-                  positionNode[1]={0.0f,0.0f};
-                  VectorRotationByAngle(angleOne, oldNode1, newNode1);
-                  positionNode[2]=newNode1;
-                  VectorRotationByAngle(angleTwo, oldNode1, newNode1);
-                  positionNode[3]=newNode1;
-                  /*
-                   positionNode[0]={-10.0f, 0.0f};
-                   positionNode[1]={0.0f,0.0f};
-                   positionNode[2]={5.0f, -8.660254037f};
-                   positionNode[3]={5.0f, 8.660254037f};
-                   */
-                  
-                  //simpleTreeGraph.printTreeGraph();
-                  simpleTreeGraph.calculateEccentricity();
+                  createBasicTGraphUnit();
                   
                   std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
-                  
-                  
                   
                   for(int i = 2; i <= order; i++)
                   {
                     std::cout << "generation: " << i << std::endl;
-                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph);
+                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph, i);
                     std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
                     simpleTreeGraph.calculateEccentricity();
                     //simpleTreeGraph.printTreeGraph();
@@ -539,6 +488,23 @@ public:
 
                   fStartPanX = 0.0f;
                   fStartPanY = 0.0f;
+                  
+                  createBasicTGraphUnit();
+                  
+                  std::cout << "TGraph Size:" << simpleTreeGraph.graph.size() << std::endl ;
+                  
+                  for(int i = 2; i <= order; i++)
+                  {
+                    std::cout << "generation: " << i << std::endl;
+                    nextGenerationGraph(simpleTreeGraph, simpleTreeGraph, i);
+                    std::cout << "size: " << simpleTreeGraph.graph.size() << std::endl ;
+                    simpleTreeGraph.calculateEccentricity();
+                    //simpleTreeGraph.printTreeGraph();
+                  }
+                  
+                  TGraph.clear();
+                  calculateTGraphDrawing(order);
+                  
                 }
                 
                 if (GetKey(olc::Key::T).bPressed)
