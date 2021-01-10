@@ -1,6 +1,6 @@
 /*
- Created on 2021/01/06
- Last modified on 2021/01/09
+ Created on 6. Jan 2021
+ Last modified on 10. Jan 2021
  Author: bondoki
  
  Purpose: Rendering of the T-Graph fractal aka Tree fractal aka T-fractal with functionality f=3,
@@ -8,19 +8,25 @@
  structures and diffusion on a family of fractals", J. Phys. A: Math. Gen. (1986), 19, L1021-L1026.
  This fractal has the fractal dimension of df=ln(f)/ln(2) -> df=1.5849625 with a total number of
  nodes N=pow(f,G)+1.
- The fractal construction obeys the rule to insert between every branch a new leave or
+ The fractal construction obeys the following rule: insert between every branch a new leave or
  equivalently to copy and rotate the previous structure and attach it to any periphery node being the new center:
  G0     G1     G2
                  _|
  ___ -> ___ -> ___|___
          |      |   |
  
- Inspired by the Pan&Zoom example of Javidx9 (https://youtu.be/ZQ8qtAizis4) gave the idea for this.
+ Inspired by the Pan&Zoom example of Javidx9 ( https://youtu.be/ZQ8qtAizis4 ) gave the idea for this.
  It's just for fun and educational purpose. Feel free to modify and use it :)
- One note: according to the selected periphery node for the next generation the next fractal is still valid, but
- the projection onto 2D gives a variety of appearance for higher generation but fails for the
- unique right angle projection (offsetAngle=30). To check this look at lines 176-182. 
  
+ Note1: according to the selected periphery node for the next generation the next fractal is still valid, but
+ the projection onto 2D gives a variety of appearance for higher generation but fails for the
+ unique right angle projection (offsetAngle=30). To check this look at lines 214-221.
+ Note2: You may change the functionality of the fractal/graph in line 81 and use line 201-213
+ for finding a good (but sadly not unique) way to render the fractal. For f=4 the fractal dimension
+ is df=ln(4)/ln(2)=2.0 giving the Peano basin fractal (2D Greek Cross fractal), see also
+ https://commons.wikimedia.org/wiki/File:Greek_cross_2D_1_through_4.svg .
+ Note3: Also higher functionalities f>4 are possible but the fractals dimension df=ln(f)/ln(2)
+ surly exceed 2D. Let me know if you recognize them and their corresponding name.
  
  License: This piece of code is licensed to GNU GPLv3 according to
  https://github.com/OneLoneCoder/videos/blob/master/LICENSE
@@ -72,6 +78,7 @@ public:
                 offsetAngle = 0;
                 
                 order=1;
+                functionality = 5; // you may try f=4 and above and uncomment line
                 
                 createBasicTGraphUnit();
                  
@@ -110,6 +117,24 @@ public:
           simpleTreeGraph.clear();
           positionNode.clear();
           
+          olc::vf2d oldNode1 = {-10.0f, 0.0f};
+          positionNode[0]={0.0f,0.0f};
+          
+          for(int i = 1; i <= functionality; i++)
+          {
+            simpleTreeGraph.addEdge(0,i,1);
+            
+            //1 0 - 0
+            //2 240 2
+            //3 120 1
+            olc::vf2d newNode1;
+            float angle = (360.0/functionality)*(functionality+1-i)-((functionality+1-i)%functionality)*offsetAngle;
+            
+            VectorRotationByAngle(angle, oldNode1, newNode1);
+            positionNode[i]=newNode1;
+          }
+          
+          /*
           simpleTreeGraph.addEdge(0,1,1);
           simpleTreeGraph.addEdge(1,2,1);
           simpleTreeGraph.addEdge(1,3,1);
@@ -129,6 +154,7 @@ public:
           positionNode[2]=newNode1;
           VectorRotationByAngle(angleTwo, oldNode1, newNode1);
           positionNode[3]=newNode1;
+          */
           /*
            *         positionNode[0]={-10.0f, 0.0f};
            *         positionNode[1]={0.0f,0.0f};
@@ -169,24 +195,34 @@ public:
         {
           nextGraph.clear();
           
-          NodeIdx centerNode = oldGraph.centerGraph.at(0);
+          NodeIdx centerNode = oldGraph.centerGraph.at(0);          
           NodeIdx peripheryNode = oldGraph.peripheralGraph.at(0);
           
-          // Note: if you use an equivalent other periphery node you get an valid fractal
+          // Note1: this approach is maybe useful to find the longest euclidean distance to the center
+          // esp for offsetAngle=0 and f>=4
+          /*
+          float maxDistance2 = positionNode[peripheryNode].mag2();
+          for (const auto& node : oldGraph.peripheralGraph)
+          {
+            if(positionNode[node].mag2() > maxDistance2)
+            {
+              maxDistance2 = positionNode[node].mag2();
+              peripheryNode = node;
+            }
+          }
+          */
+          // Note2: if you use an other equivalent periphery node you get an valid fractal (for f=3)
           // but disordered for the right angle projection (offset 30)
-          // if(o == 4)
-          //  peripheryNode = 9;//8;//6;
-          
+          //if(o == 4)
+          //  peripheryNode = 8;//6;
           //if(o == 5) // if previous peripheryNode = oldGraph.peripheralGraph.at(0);
-          //  peripheryNode = 23;//17;//15;
+          //  peripheryNode = 17;//15;
+          //if(o == 3)
+          // peripheryNode = 3;//8;//6;//5;
           
           std::cout << "Selected Periphery Node =  " << peripheryNode << std::endl;
           
-          float angleOne = 240-2*offsetAngle;
-          float angleTwo = 120-offsetAngle;
-          
           std::map<NodeIdx, olc::vf2d> positionNewNode;
-          
           
           std::cout << "Periphery Old Graph = ( ";
           for (const auto& node : oldGraph.peripheralGraph)
@@ -234,61 +270,80 @@ public:
               
               if(node1 != startNode && node2 != startNode)
               {
-                nextGraph.addEdge(node1+sizeGraph+correctionIdxNode1,node2+sizeGraph+correctionIdxNode2,weight);
-                nextGraph.addEdge(node1+(2*sizeGraph-1)+correctionIdxNode1,node2+(2*sizeGraph-1)+correctionIdxNode2,weight);
+                for(int i = 1; i < functionality; i++)
+                {
+                  //nextGraph.addEdge(node1+sizeGraph+correctionIdxNode1,node2+sizeGraph+correctionIdxNode2,weight);
+                  //nextGraph.addEdge(node1+(2*sizeGraph-1)+correctionIdxNode1,node2+(2*sizeGraph-1)+correctionIdxNode2,weight);
                 
-                olc::vf2d oldNode1 = positionNode[node1]-positionNode[peripheryNode];
-                olc::vf2d newNode1A;
-                VectorRotationByAngle(angleOne, oldNode1, newNode1A);
-                positionNewNode[node1+sizeGraph+correctionIdxNode1]=positionNode[peripheryNode]+newNode1A;
+                  nextGraph.addEdge(node1+(i*sizeGraph-(i-1))+correctionIdxNode1,node2+(i*sizeGraph-(i-1))+correctionIdxNode2,weight);
+                
+                }
+                
+                for(int i = 1; i < functionality; i++)
+                {
+                  float angle = (360.0/functionality)*(functionality-i)-((functionality-i)%functionality)*offsetAngle;
+                  
+                  olc::vf2d oldNode1 = positionNode[node1]-positionNode[peripheryNode];
+                  olc::vf2d newNode1A;
+                  VectorRotationByAngle(angle, oldNode1, newNode1A);
+                  positionNewNode[node1+(i*sizeGraph-(i-1))+correctionIdxNode1]=positionNode[peripheryNode]+newNode1A;
               
-                olc::vf2d oldNode2 = positionNode[node2]-positionNode[peripheryNode];
-                olc::vf2d newNode2A;
-                VectorRotationByAngle(angleOne, oldNode2, newNode2A);
-                positionNewNode[node2+sizeGraph+correctionIdxNode2]=positionNode[peripheryNode]+newNode2A;
-                
-                olc::vf2d newNode1B;
-                VectorRotationByAngle(angleTwo, oldNode1, newNode1B);
-                positionNewNode[node1+(2*sizeGraph-1)+correctionIdxNode1]=positionNode[peripheryNode]+newNode1B;
-              
-                olc::vf2d newNode2B;
-                VectorRotationByAngle(angleTwo, oldNode2, newNode2B);
-                positionNewNode[node2+(2*sizeGraph-1)+correctionIdxNode2]=positionNode[peripheryNode]+newNode2B;
-                
+                  olc::vf2d oldNode2 = positionNode[node2]-positionNode[peripheryNode];
+                  olc::vf2d newNode2A;
+                  VectorRotationByAngle(angle, oldNode2, newNode2A);
+                  positionNewNode[node2+(i*sizeGraph-(i-1))+correctionIdxNode2]=positionNode[peripheryNode]+newNode2A;
+               
+                  
+                }
+                   
               }
               else
               {
                 if(node1 == startNode)
                 {
-                  nextGraph.addEdge(node1,node2+sizeGraph+correctionIdxNode2,weight);
-                  nextGraph.addEdge(node1,node2+(2*sizeGraph-1)+correctionIdxNode2,weight);
+                  for(int i = 1; i < functionality; i++)
+                  {
+                    
+                    nextGraph.addEdge(node1,node2+(i*sizeGraph-(i-1))+correctionIdxNode2,weight);
+                    
+                  }
                   
-                  olc::vf2d oldNode2 = positionNode[node2]-positionNode[peripheryNode];
-                  olc::vf2d newNode2A;
-                  VectorRotationByAngle(angleOne, oldNode2, newNode2A);
-                  positionNewNode[node2+sizeGraph+correctionIdxNode2]=positionNode[peripheryNode]+newNode2A;
-                
-                  olc::vf2d newNode2B;
-                  VectorRotationByAngle(angleTwo, oldNode2, newNode2B);
-                  positionNewNode[node2+(2*sizeGraph-1)+correctionIdxNode2]=positionNode[peripheryNode]+newNode2B;
-                
+                  for(int i = 1; i < functionality; i++)
+                  {
+                    float angle = (360.0/functionality)*(functionality-i)-((functionality-i)%functionality)*offsetAngle;
+                    
+                    olc::vf2d oldNode2 = positionNode[node2]-positionNode[peripheryNode];
+                    olc::vf2d newNode2A;
+                    VectorRotationByAngle(angle, oldNode2, newNode2A);
+                    positionNewNode[node2+(i*sizeGraph-(i-1))+correctionIdxNode2]=positionNode[peripheryNode]+newNode2A;
+                    
+                    
+                  }
+               
                 }
                 
                 if(node2 == startNode)
                 {
-                  nextGraph.addEdge(node1+sizeGraph+correctionIdxNode1,node2,weight);
-                  nextGraph.addEdge(node1+(2*sizeGraph-1)+correctionIdxNode1,node2,weight);
+                  for(int i = 1; i < functionality; i++)
+                  {
+                    //nextGraph.addEdge(node1+sizeGraph+correctionIdxNode1,node2+sizeGraph+correctionIdxNode2,weight);
+                    //nextGraph.addEdge(node1+(2*sizeGraph-1)+correctionIdxNode1,node2+(2*sizeGraph-1)+correctionIdxNode2,weight);
+                    
+                    nextGraph.addEdge(node1+(i*sizeGraph-(i-1))+correctionIdxNode1,node2,weight);
+                    
+                  }
                   
-                  olc::vf2d oldNode1 = positionNode[node1]-positionNode[peripheryNode];
-                  olc::vf2d newNode1A;
-                  VectorRotationByAngle(angleOne, oldNode1, newNode1A);
-                  positionNewNode[node1+sizeGraph+correctionIdxNode1]=positionNode[peripheryNode]+newNode1A;
-                  
-                  
-                  olc::vf2d newNode1B;
-                  VectorRotationByAngle(angleTwo, oldNode1, newNode1B);
-                  positionNewNode[node1+(2*sizeGraph-1)+correctionIdxNode1]=positionNode[peripheryNode]+newNode1B;
-                  
+                  for(int i = 1; i < functionality; i++)
+                  {
+                    float angle = (360.0/functionality)*(functionality-i)-((functionality-i)%functionality)*offsetAngle;
+                    
+                    olc::vf2d oldNode1 = positionNode[node1]-positionNode[peripheryNode];
+                    olc::vf2d newNode1A;
+                    VectorRotationByAngle(angle, oldNode1, newNode1A);
+                    positionNewNode[node1+(i*sizeGraph-(i-1))+correctionIdxNode1]=positionNode[peripheryNode]+newNode1A;
+                    
+                    
+                  }
                   
                 }
               }
@@ -561,9 +616,19 @@ public:
                 DrawString(10, ScreenHeight()-40, "Order: " + std::to_string(order), olc::YELLOW);
                 DrawString(100, ScreenHeight()-40, "Points: " + std::to_string(positionNode.size()), olc::YELLOW);
                 
-                DrawString(10, ScreenHeight()-10, "USAGE: R ARROWS ESC MOUSE", olc::YELLOW);
+                DrawString(10, ScreenHeight()-10, "USAGE: R ARROWS MOUSE ESC", olc::YELLOW);
                 DrawString(10, ScreenHeight()-20, "scale: " + std::to_string(fScaleX), olc::YELLOW);
-                DrawString(10, ScreenHeight()-30, "OffSetAngle: " + std::to_string(offsetAngle) + " -> 0; " + std::to_string(int (240-2*offsetAngle)) + ";" + std::to_string(int(120-offsetAngle)), olc::YELLOW);
+                //DrawString(10, ScreenHeight()-30, "OffSetAngle: " + std::to_string(offsetAngle) + " -> 0; " + std::to_string(int (240-2*offsetAngle)) + ";" + std::to_string(int(120-offsetAngle)), olc::YELLOW);
+                DrawString(10, ScreenHeight()-30, "OffSetAngle: " + std::to_string(int(offsetAngle)), olc::YELLOW);
+                
+                std::string angleOffsetString = "";
+                for(int i = 1; i < functionality; i++)
+                  {
+                    float angle = (360.0/functionality)*(functionality-i)-((functionality-i)%functionality)*offsetAngle;
+                    angleOffsetString += std::to_string(int(angle)) +";";
+                    
+                  }
+                DrawString(130, ScreenHeight()-30, " -> 0;"+angleOffsetString, olc::YELLOW);
                 
                 
                 DrawRect(ScreenOffSetX, ScreenOffSetY, 256, 256, olc::GREEN);
@@ -582,7 +647,6 @@ public: int order;
         std::vector<LineSegment> TGraph;
         
         const int orderMAX = 7;
-        //const int NMAX = int(std::pow(2,orderMAX));
         
         float fOffsetX = 0.0f;
 	float fOffsetY = 0.0f;
@@ -599,6 +663,8 @@ public: int order;
         
         TreeGraph simpleTreeGraph; 
         std::map<NodeIdx, olc::vf2d> positionNode;
+        
+        int functionality;
         
 };
 
